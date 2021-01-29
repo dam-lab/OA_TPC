@@ -1,15 +1,10 @@
-setwd("C:/users/james/Documents/Grad_school/OA_Project/Cost_experiments/TPC/")
+setwd("~/TPC/")
 
 library(data.table)
-
 library(dplyr)
-
 library(ggplot2)
-
 library(tidyr)
-
 library(broom)
-
 library(lme4)
 library(car)
 library(pROC)
@@ -39,16 +34,11 @@ TPC_data <- unite(TPC_data,#the data frame
 TPC.list <- split(TPC_data, f = TPC_data$unique)
 
 
-#TPC_data$environment <- as.character(NA)
-
-#TPC_data[1:896,8] <- as.character("Home")
-#TPC_data[897:nrow(TPC_data),8] <- as.character("Transplant")
-
-### complete graph comparing against AA and HH
 
 
 
 
+## Plot with all the curves from each group
 
 TPC_plot_complete <- ggplot(data = TPC_data, aes(temp, #the x-axis value
                                                  survivorship, #the y-axis value
@@ -86,6 +76,9 @@ TPC_plot_complete
 
 TPC_data_2 <- filter(TPC_data, !grepl("HH_AA_9", unique))
 
+
+
+## plot with only F1 curves
 TPC_plot <- ggplot(data = TPC_data_2, aes(temp, #the x-axis value
                                         survivorship, #the y-axis value
                                         color = treatment))+ # change the lines to be different based on sex
@@ -160,7 +153,7 @@ TPC_plot2
 TPC_plot+facet_wrap(.~environment, nrow = 2) # create two graphs with one on top of the other (i.e. 2 rows instead of 2 columns)
 
 
-## Compare HH to AA transplants between gens 1 and 9
+## Compare GH to AM transplants between gens 1 and 9
 TPC_data.HHAA <- TPC_data[(TPC_data$treatment == "HH") & (TPC_data$dev.treatment == "AA"),]
 
 
@@ -204,152 +197,20 @@ TPC_plot_HHAA <- ggplot(data = TPC_data.HHAA, aes(temp, #the x-axis value
         legend.title.align = 0.5)
 TPC_plot_HHAA
 
-##### AM AMGH and GH TPC plot #####
-
-TPC_data.AAHH.AA.HH <- rbind(TPC_data.AAdev, TPC_data.AAHH)
-
-
-
-TPC_plot_AAHH.AA.HH <- ggplot(data = TPC_data.AAHH.AA.HH, aes(temp, #the x-axis value
-                                                              survivorship, #the y-axis value
-                                                              color = unique))+ # change the lines to be different based on sex
-  geom_point(alpha = 0.5,
-             size = 4,
-             position = position_jitter(height = 0.025, width = 0.5))+ # make a scatter plot with the points slightly offset from each other
-  
-  geom_smooth(method = "glm", # make the plotted model match the model we use to test
-              method.args = list(family = "binomial"),# make sure we know that there is only 2 possible data values
-              se = FALSE,
-              size =4)+ # do not plot standard error
-  
-  #scale_y_continuous(breaks = c(0,0.5,1))+ # 3 values on the y-axis displayed
-  scale_colour_manual(name = "Generation", #need to use scale_colour_manual for line graphs
-                      values = c("Blue",
-                                 "Pink",
-                                 "Red"),
-                      #"Gold",
-                      #"Red"),
-                      labels = c(expression(AM[AM]),
-                                 expression(AM[GH]),
-                                 expression(GH[GH])))+
-  #"F1",
-  #"F9"))+
-  theme_light()+
-  xlab(xlab)+
-  ylab("Survivorship")+
-  theme(axis.title.x = element_text(size = 60),
-        axis.title.y = element_text(size = 60),
-        axis.text.x = element_text(size = 60, colour = "black"),
-        axis.text.y = element_text(size = 60, colour = "black"),
-        legend.position = "bottom",
-        legend.text = element_text(size = 60),
-        legend.title = element_blank(),
-        legend.title.align = 0.5)
-TPC_plot_AAHH.AA.HH
-
-
-### Blue and red lines only
-
-TPC_data_blue_red <- filter(TPC_data, unique == c("AA_AA", "HH_HH"))
-
-TPC_plot_blue_red <- ggplot(data = TPC_data_blue_red, aes(temp, #the x-axis value
-                                                          survivorship, #the y-axis value
-                                                          color = unique))+ # change the lines to be different based on sex
-  geom_point(position = position_jitter(height = 0.025, width = 0.5))+ # make a scatter plot with the points slightly offset from each other
-  
-  geom_smooth(method = "glm", # make the plotted model match the model we use to test
-              method.args = list(family = "binomial"),# make sure we know that there is only 2 possible data values
-              se = FALSE)+ # do not plot standard error
-  
-  scale_y_continuous(breaks = c(0,0.5,1))+ # 3 values on the y-axis displayed
-  scale_colour_manual(name = "Experimental\nCondition", #need to use scale_colour_manual for line graphs
-                      values = c("Blue",
-                                 #"Purple",
-                                 #"Gold",
-                                 "Red"),
-                      labels = c("Ambient",
-                                 # "Ambient in GW",
-                                 # "GW in Ambient",
-                                 "GW"))+
-  theme_light()+
-  xlab(xlab)+
-  ylab("Survivorship")+
-  theme(axis.title.x = element_text(size = 20),
-        axis.title.y = element_text(size = 20),
-        axis.text.x = element_text(size = 20, colour = "black"),
-        axis.text.y = element_text(size = 20, colour = "black"),
-        legend.position = "bottom",
-        legend.text = element_text(size = 20),
-        legend.title = element_blank(),
-        legend.title.align = 0.5)
-TPC_plot_blue_red
-
-### Red and gold lines
-
-TPC_data_red_yellow <- filter(TPC_data, unique == c("HH_AA", "HH_HH"))
-
-TPC_plot_red_yellow <- ggplot(data = TPC_data_red_yellow, aes(temp, #the x-axis value
-                                                              survivorship, #the y-axis value
-                                                              color = unique))+ # change the lines to be different based on sex
-  geom_point(position = position_jitter(height = 0.025, width = 0.5))+ # make a scatter plot with the points slightly offset from each other
-  
-  geom_smooth(method = "glm", # make the plotted model match the model we use to test
-              method.args = list(family = "binomial"),# make sure we know that there is only 2 possible data values
-              se = FALSE)+ # do not plot standard error
-  
-  scale_y_continuous(breaks = c(0,0.5,1))+ # 3 values on the y-axis displayed
-  scale_colour_manual(name = "Experimental\nCondition", #need to use scale_colour_manual for line graphs
-                      values = c(#"Blue",
-                        #"Purple",
-                        "Gold",
-                        "Red"),
-                      labels = c(#"Ambient",
-                        # "Ambient in GW",
-                        "GW in Ambient",
-                        "GW"))+
-  theme_light()+
-  xlab(xlab)+
-  ylab("Survivorship")+
-  theme(axis.title.x = element_text(size = 20),
-        axis.title.y = element_text(size = 20),
-        axis.text.x = element_text(size = 20, colour = "black"),
-        axis.text.y = element_text(size = 20, colour = "black"),
-        legend.position = "bottom",
-        legend.text = element_text(size = 20),
-        legend.title = element_blank(),
-        legend.title.align = 0.5)
-TPC_plot_red_yellow
-
-TPC_glm <- glm(survivorship~treatment*dev.treatment*sex, data = TPC_data)
-summary(TPC_glm)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 ############ Statistics ##############
 
 setwd("C:/users/james/Documents/Grad_school/OA_Project/Cost_experiments/TPC/Statistics")
-#catherine notes
 
-#str(TPC_data) # structure of the data frame
 
-## make all the variables as "factors"... This will change the results of the ANOVA
+
+
+## make all the variables as "factors".
 TPC_data$replicate<-as.factor(TPC_data$replicate)
-#TPC_data$temp <- as.factor(TPC_data$temp)
-TPC_data$treatment <- as.factor(TPC_data$treatment)
-TPC_data$dev.treatment <- as.factor(TPC_data$dev.treatment)
 
+TPC_data$treatment <- as.factor(TPC_data$treatment)
+
+TPC_data$dev.treatment <- as.factor(TPC_data$dev.treatment)
 
 TPC_data$sex <- as.factor(TPC_data$sex)
 
@@ -371,8 +232,8 @@ summary(TPC.Anova)
 TPC.Anova$factors <- rownames(TPC.Anova)
 fwrite(TPC.Anova, file = "TPC_Anova_total_type2.txt", sep = "\t")
 
-
-m1a <- glmer(survivorship~treatment*dev.treatment*temp + # do not include sex since it has no effect in a sex*temp anova
+## model without sex or generation
+m1a <- glmer(survivorship~treatment*dev.treatment*temp + 
                (1|replicate), #include the replicate as a random effect
              family=binomial, #indicate binomial data
              data = TPC_data)
@@ -383,17 +244,7 @@ summary(TPC.Anova_no_gen_no_sex)
 TPC.Anova_no_gen_no_sex$factors <- rownames(TPC.Anova_no_gen_no_sex)
 fwrite(TPC.Anova_no_gen_no_sex, file = "TPC_Anova_total_no_gen_no_sex_type2.txt", sep = "\t")
 
-#TPC.emm <- emmeans(m1, pairwise ~ treatment | dev.treatment)
 
-
-#pairs(TPC.emm)
-
-
-#library(multcomp)
-#m1.posthoc <- glht(m1)
-#summary(m1.posthoc)
-
-#TukeyHSD(m1)
 
 
 
@@ -526,21 +377,7 @@ TPC.Anova11$factors <- rownames(TPC.Anova11)
 
 fwrite(TPC.Anova11, file = "TPC_transplant_generation.txt", sep = "\t")
 
-TPC_data.HHAA.F1 <- filter(TPC_data.HHAA, TPC_data.HHAA$generation == 1)
-TPC_data.HHAA.F9 <- filter(TPC_data.HHAA, TPC_data.HHAA$generation == 9)
 
-m12 <- glmer(survivorship~temp + 
-               (1|replicate), #include the replicate as a random effect
-             family=binomial, #indicate binomial data
-             data = TPC_data.HHAA.F1)
-
-m13 <- glmer(survivorship~generation*temp + 
-               (1|replicate), #include the replicate as a random effect
-             family=binomial, #indicate binomial data
-             data = TPC_data.HHAA.F9)
-
-
-Anova(m12, m13, type = 3)
 
 # test to see if transplants at max performance are different from each other - post-hoc pairwise comparison
 TPC.Tukey.9 <- TukeyHSD(aov(survivorship~treatment*as.factor(temp), data = TPC_data.AAdev2))
@@ -708,3 +545,140 @@ Max.reaction.norm
 
 
 fwrite(Max.df, file = "Max_surv_temp.txt", sep = "\t")
+
+
+##### Old plots #####
+
+#AM AMGH and GH TPC plot #
+
+TPC_data.AAHH.AA.HH <- rbind(TPC_data.AAdev, TPC_data.AAHH)
+
+
+
+TPC_plot_AAHH.AA.HH <- ggplot(data = TPC_data.AAHH.AA.HH, aes(temp, #the x-axis value
+                                                              survivorship, #the y-axis value
+                                                              color = unique))+ # change the lines to be different based on sex
+  geom_point(alpha = 0.5,
+             size = 4,
+             position = position_jitter(height = 0.025, width = 0.5))+ # make a scatter plot with the points slightly offset from each other
+  
+  geom_smooth(method = "glm", # make the plotted model match the model we use to test
+              method.args = list(family = "binomial"),# make sure we know that there is only 2 possible data values
+              se = FALSE,
+              size =4)+ # do not plot standard error
+  
+  #scale_y_continuous(breaks = c(0,0.5,1))+ # 3 values on the y-axis displayed
+  scale_colour_manual(name = "Generation", #need to use scale_colour_manual for line graphs
+                      values = c("Blue",
+                                 "Pink",
+                                 "Red"),
+                      #"Gold",
+                      #"Red"),
+                      labels = c(expression(AM[AM]),
+                                 expression(AM[GH]),
+                                 expression(GH[GH])))+
+  #"F1",
+  #"F9"))+
+  theme_light()+
+  xlab(xlab)+
+  ylab("Survivorship")+
+  theme(axis.title.x = element_text(size = 60),
+        axis.title.y = element_text(size = 60),
+        axis.text.x = element_text(size = 60, colour = "black"),
+        axis.text.y = element_text(size = 60, colour = "black"),
+        legend.position = "bottom",
+        legend.text = element_text(size = 60),
+        legend.title = element_blank(),
+        legend.title.align = 0.5)
+TPC_plot_AAHH.AA.HH
+
+
+### Blue and red lines only
+
+TPC_data_blue_red <- filter(TPC_data, unique == c("AA_AA", "HH_HH"))
+
+TPC_plot_blue_red <- ggplot(data = TPC_data_blue_red, aes(temp, #the x-axis value
+                                                          survivorship, #the y-axis value
+                                                          color = unique))+ # change the lines to be different based on sex
+  geom_point(position = position_jitter(height = 0.025, width = 0.5))+ # make a scatter plot with the points slightly offset from each other
+  
+  geom_smooth(method = "glm", # make the plotted model match the model we use to test
+              method.args = list(family = "binomial"),# make sure we know that there is only 2 possible data values
+              se = FALSE)+ # do not plot standard error
+  
+  scale_y_continuous(breaks = c(0,0.5,1))+ # 3 values on the y-axis displayed
+  scale_colour_manual(name = "Experimental\nCondition", #need to use scale_colour_manual for line graphs
+                      values = c("Blue",
+                                 #"Purple",
+                                 #"Gold",
+                                 "Red"),
+                      labels = c("Ambient",
+                                 # "Ambient in GW",
+                                 # "GW in Ambient",
+                                 "GW"))+
+  theme_light()+
+  xlab(xlab)+
+  ylab("Survivorship")+
+  theme(axis.title.x = element_text(size = 20),
+        axis.title.y = element_text(size = 20),
+        axis.text.x = element_text(size = 20, colour = "black"),
+        axis.text.y = element_text(size = 20, colour = "black"),
+        legend.position = "bottom",
+        legend.text = element_text(size = 20),
+        legend.title = element_blank(),
+        legend.title.align = 0.5)
+TPC_plot_blue_red
+
+### Red and gold lines
+
+TPC_data_red_yellow <- filter(TPC_data, unique == c("HH_AA", "HH_HH"))
+
+TPC_plot_red_yellow <- ggplot(data = TPC_data_red_yellow, aes(temp, #the x-axis value
+                                                              survivorship, #the y-axis value
+                                                              color = unique))+ # change the lines to be different based on sex
+  geom_point(position = position_jitter(height = 0.025, width = 0.5))+ # make a scatter plot with the points slightly offset from each other
+  
+  geom_smooth(method = "glm", # make the plotted model match the model we use to test
+              method.args = list(family = "binomial"),# make sure we know that there is only 2 possible data values
+              se = FALSE)+ # do not plot standard error
+  
+  scale_y_continuous(breaks = c(0,0.5,1))+ # 3 values on the y-axis displayed
+  scale_colour_manual(name = "Experimental\nCondition", #need to use scale_colour_manual for line graphs
+                      values = c(#"Blue",
+                        #"Purple",
+                        "Gold",
+                        "Red"),
+                      labels = c(#"Ambient",
+                        # "Ambient in GW",
+                        "GW in Ambient",
+                        "GW"))+
+  theme_light()+
+  xlab(xlab)+
+  ylab("Survivorship")+
+  theme(axis.title.x = element_text(size = 20),
+        axis.title.y = element_text(size = 20),
+        axis.text.x = element_text(size = 20, colour = "black"),
+        axis.text.y = element_text(size = 20, colour = "black"),
+        legend.position = "bottom",
+        legend.text = element_text(size = 20),
+        legend.title = element_blank(),
+        legend.title.align = 0.5)
+TPC_plot_red_yellow
+
+TPC_glm <- glm(survivorship~treatment*dev.treatment*sex, data = TPC_data)
+summary(TPC_glm)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
